@@ -25,19 +25,16 @@ public class SimpleStatsTest {
     }
 
     @Test
-    @Ignore
     public void sum() throws Exception {
         Assert.assertEquals(135, stats.sum());
     }
 
     @Test
-    @Ignore
     public void mean() throws Exception {
         Assert.assertEquals(15, stats.mean(), 0);
     }
 
     @Test
-    @Ignore
     public void median() throws Exception {
         Assert.assertEquals(14, stats.median());
     }
