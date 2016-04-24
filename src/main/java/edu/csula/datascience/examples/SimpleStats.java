@@ -1,9 +1,9 @@
 package edu.csula.datascience.examples;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
 
 /**
  * A simple math statistics programming exercise
