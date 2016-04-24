@@ -9,109 +9,93 @@ import java.util.List;
  * A simple math statistics programming exercise
  */
 public class SimpleStats {
-	private final List<Integer> data;
-	public SimpleStats(List<Integer> data) {
-		this.data = data;
-	}
+    private final List<Double> data;
+    public SimpleStats(List<Double> data) {
+        this.data = data;
+    }
 
-	/**
-	 * Sum of entire list of numbers
-	 */
-	public int sum() {
-		int sum = 0;
-		for(Integer num : data) {
-			sum += num;
-		}
-		return sum;
-	}
+    /**
+     * Sum of entire list of numbers
+     */
+    public double sum() {
+        return data.stream()
+            .mapToDouble(Double::doubleValue)
+            .sum();
+    }
 
-	/**
-	 * Average of the numbers
-	 */
-	public double mean() {
-		return this.sum()/data.size();
-	}
+    /**
+     * Average of the numbers
+     */
+    public double mean() {
+        OptionalDouble avg = data.stream()
+            .mapToDouble(Double::doubleValue)
+            .average();
 
-	/**
-	 * Sort the numbers, median is the middle value of the sorted list
-	 */
-	public int median() {
-		ArrayList<Integer> sortedList = new ArrayList<>();
-		sortedList.addAll(data);
-		Collections.sort(sortedList);
-		if(sortedList.size() % 2 == 1) {
-			int index = (sortedList.size() / 2) + 1;
-			return sortedList.get(index);
-		} else {
-			int index = sortedList.size() / 2;
-			return (sortedList.get(index) + sortedList.get(index + 1)) / 2;
-		}       
-	}
+        return avg.isPresent() ? avg.getAsDouble() : 0;
+    }
 
-	/**
-	 * The value of max minus min
-	 */
-	public int range() {
-		int max = Integer.MIN_VALUE;
-		int min = Integer.MAX_VALUE;
-		for(Integer num : data) {
-			if(num > max) {
-				max = num;
-			}
-			if(num < min) {
-				min = num;
-			}
-		}
-		return max-min;
-	}
+    /**
+     * Sort the numbers, median is the middle value of the sorted list
+     */
+    public double median() {
+        Collections.sort(data);
 
-	/**
-	 * The number that repeats the most in the numbers
-	 */
-	public int mode() {
-		HashMap<Integer,Integer> map = new HashMap<>();
-		Integer index = 0;
-		int max = Integer.MIN_VALUE;
-		for(Integer num : data) {
-			if(map.containsKey(num)) {
-				map.put(num, map.get(num)+1);
-			} else {
-				map.put(num,1);
-			}
-		}
+        if (data.size() == 0) {
+            return 0;
+        } else if (data.size() % 2 != 0) {
+            return data.get(data.size() / 2);
+        } else {
+            return (data.get(data.size() / 2) + data.get(data.size() / 2 - 1)) / 2;
+        }
+    }
 
-		for(Integer key : map.keySet()){
-			if(map.get(key) > max) {
-				index = key;
-				max = map.get(key);
-			}
-		}
-		return index;
-	}
+    /**
+     * The value of max minus min
+     */
+    public double range() {
+        return max() - min();
+    }
 
-	/**
-	 * Maximum number of the numbers
-	 */
-	public int max() {
-		int max = Integer.MIN_VALUE;
-		for(Integer num : data) {
-			if(num > max) {
-				max = num;
-			}
-		}
-		return max;
-	}
+    /**
+     * The number that repeats the most in the numbers
+     */
+    public double mode() {
+        Map<Double, Integer> count = Maps.newTreeMap();
+        double result = -1;
 
-	/**
-	 * Minimum number of the numbers
-	 */
-	public int min() {
-		int min = Integer.MAX_VALUE;
-		for(Integer num : data) {
-			if(num < min) {
-				min = num;
-			}
-		}
-		return min;
-	}
+        for (Double item: data) {
+            count.put(
+                item,
+                count.getOrDefault(item, 0) + 1
+            );
+        }
+
+        Iterator<Map.Entry<Double, Integer>> iterator = count.entrySet().iterator();
+
+        Integer maxCount = 0;
+        while (iterator.hasNext()) {
+            Map.Entry<Double, Integer> entry = iterator.next();
+
+            if (maxCount < entry.getValue()) {
+                maxCount = entry.getValue();
+                result = entry.getKey();
+            }
+        }
+
+        return result;
+    }
+
+    /**
+     * Maximum number of the numbers
+     */
+    public double max() {
+        return Collections.max(data);
+    }
+
+    /**
+     * Minimum number of the numbers
+     */
+    public double min() {
+        return Collections.min(data);
+    }
 }
