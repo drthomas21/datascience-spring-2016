@@ -36,6 +36,9 @@ import static org.elasticsearch.node.NodeBuilder.nodeBuilder;
  * After that we will be using elastic search to do full text search
  */
 public class ElasticSearchExampleApp {
+    private final static String indexName = "bd-data";
+    private final static String typeName = "city-temperatures";
+
     public static void main(String[] args) throws URISyntaxException, IOException {
         Node node = nodeBuilder().settings(Settings.builder()
             .put("path.home", "elasticsearch-data")).node();
@@ -91,23 +94,21 @@ public class ElasticSearchExampleApp {
                 CSVFormat.EXCEL.withHeader()
             );
 
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-
             // for each record, we will insert data into Elastic Search
             parser.forEach(record -> {
                 // cleaning up dirty data which doesn't have time or temperature
                 if (
                     !record.get("dt").isEmpty() &&
-                        !record.get("AverageTemperature").isEmpty()
-                    ) {
+                    !record.get("AverageTemperature").isEmpty()
+                ) {
                     Temperature temp = new Temperature(
-                        LocalDate.parse(record.get("dt"), formatter),
+                        record.get("dt"),
                         Double.valueOf(record.get("AverageTemperature")),
                         record.get("State"),
                         record.get("Country")
                     );
 
-                    bulkProcessor.add(new IndexRequest("bd-example", "temperatures")
+                    bulkProcessor.add(new IndexRequest(indexName, typeName)
                         .source(gson.toJson(temp))
                     );
                 }
@@ -117,8 +118,8 @@ public class ElasticSearchExampleApp {
         }
 
         // simple search by field name "state" and find Washington
-        SearchResponse response = client.prepareSearch("bd-example")
-            .setTypes("temperatures")
+        SearchResponse response = client.prepareSearch(indexName)
+            .setTypes(typeName)
             .setSearchType(SearchType.DEFAULT)
             .setQuery(QueryBuilders.matchQuery("state", "Washington"))   // Query
             .setScroll(new TimeValue(60000))
@@ -143,8 +144,8 @@ public class ElasticSearchExampleApp {
             }
         }
 
-        SearchResponse sr = node.client().prepareSearch("bd-example")
-            .setTypes("temperatures")
+        SearchResponse sr = node.client().prepareSearch(indexName)
+            .setTypes(typeName)
             .setQuery(QueryBuilders.matchAllQuery())
             .addAggregation(
                 AggregationBuilders.terms("stateAgg").field("state")
@@ -161,12 +162,12 @@ public class ElasticSearchExampleApp {
     }
 
     static class Temperature {
-        final LocalDate date;
+        final String date;
         final double averageTemperature;
         final String state;
         final String country;
 
-        public Temperature(LocalDate date, double averageTemperature, String state, String country) {
+        public Temperature(String date, double averageTemperature, String state, String country) {
             this.date = date;
             this.averageTemperature = averageTemperature;
             this.state = state;
